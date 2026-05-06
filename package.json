@@ -1,0 +1,28 @@
+{
+  "name": "warden",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "bun run src/scripts/seed-superadmin.ts"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.4.1",
+    "@simplewebauthn/server": "^13.1.1",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.2",
+    "elysia": "^1.2.8",
+    "jose": "^6.2.3",
+    "nanoid": "^5.1.6",
+    "pino": "^10.3.0",
+    "postgres": "^3.4.9",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/node": "^25.6.0",
+    "drizzle-kit": "^0.31.10"
+  }
+}

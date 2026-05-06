@@ -1,0 +1,41 @@
+services:
+  api:
+    build: .
+    container_name: warden-api
+    restart: unless-stopped
+    ports:
+      - "3210:3210"
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3210
+      - DATABASE_URL=postgres://warden:warden_dev@db:5432/warden
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3210/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: postgres:18-alpine
+    container_name: warden-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: warden
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-warden_dev}
+      POSTGRES_DB: warden
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U warden"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

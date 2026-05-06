@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.tmp
+drizzle/*.sql
+!drizzle/0000_*.sql
+
+docker-compose.override.yml
