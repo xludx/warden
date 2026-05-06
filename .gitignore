@@ -5,3 +5,4 @@ drizzle/*.sql
 !drizzle/0000_*.sql
 
 docker-compose.override.yml
+admin/dist
