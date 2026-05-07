@@ -26,7 +26,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <aside className="border-b border-slate-800 bg-slate-900 lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r" aria-label="Admin navigation">
         <div className="flex items-center justify-between gap-4 border-b border-slate-800 p-4 lg:block">
           <div className="flex items-center gap-3">
-            <img src="/warden-cat-no-bg.png" alt="Warden logo" className="h-8 w-8 rounded-sm object-cover" />
+            <img src="/warden-cat-no-bg.png" alt="Warden logo" className="h-[72px] w-[72px] rounded-sm object-cover" />
             <div>
               <h1 className="text-lg font-semibold text-slate-50">Warden</h1>
               <p className="text-xs text-slate-400">Admin control plane</p>
