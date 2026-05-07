@@ -1,8 +1,8 @@
 node_modules/
 .env
 *.tmp
-drizzle/*.sql
-!drizzle/0000_*.sql
+# Migration SQL files are needed in Docker image at runtime
+# drizzle/*.sql
 
 docker-compose.override.yml
 admin/dist
