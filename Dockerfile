@@ -11,4 +11,4 @@ COPY src/ ./src/
 
 EXPOSE 3210
 
-CMD ["bun", "run", "src/index.ts"]
+CMD ["sh", "-c", "bun run db:migrate && bun run src/index.ts"]
