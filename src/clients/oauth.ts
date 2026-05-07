@@ -38,6 +38,11 @@ export function buildAuthorizationUrl(
     state,
   });
 
+  // Force consent prompt for Google so user must actively approve each time
+  if (provider === "google") {
+    params.set("prompt", "consent");
+  }
+
   return `${urls[provider]}?${params.toString()}`;
 }
 
