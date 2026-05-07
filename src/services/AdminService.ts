@@ -56,6 +56,16 @@ export class AdminService {
     logger.info({ appId: id }, "Application deleted");
   }
 
+  async updateApplication(id: string, data: { allowRegistration?: boolean }): Promise<typeof applications.$inferSelect> {
+    const app = await this.getApplication(id);
+    if (data.allowRegistration !== undefined) {
+      await db.update(applications).set({ allowRegistration: data.allowRegistration }).where(eq(applications.id, id));
+      logger.info({ appId: id, allowRegistration: data.allowRegistration }, "Application updated");
+    }
+    const rows = await db.select().from(applications).where(eq(applications.id, id)).limit(1);
+    return rows[0];
+  }
+
   async rotateAppSecret(id: string): Promise<typeof applications.$inferSelect> {
     const app = await this.getApplication(id);
     if (app.slug === "warden") throw new ForbiddenError("The Warden control-plane JWT secret cannot be rotated here");

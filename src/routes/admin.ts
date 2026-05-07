@@ -6,6 +6,7 @@ import { adminService } from "@/services/AdminService";
 import { auditService } from "@/services/AuditService";
 import {
   CreateApplicationSchema,
+  UpdateApplicationSchema,
   AddMembershipSchema,
   RemoveMembershipSchema,
   CreateServiceAccountSchema,
@@ -56,6 +57,21 @@ export const adminRoutes = new Elysia({ prefix: "/api/admin" })
       return successResponse(await adminService.getApplication(id));
     },
     { detail: { tags: ["Admin"], summary: "Get an application" } }
+  )
+
+  .patch(
+    "/applications/:id",
+    async ({ params, body, headers, set }) => {
+      await requireWardenAdmin(headers);
+      const id = validateId(params);
+      if (!id) { set.status = 400; return { success: false, error: "Invalid ID" }; }
+      const app = await adminService.updateApplication(id, body);
+      return successResponse(app);
+    },
+    {
+      body: UpdateApplicationSchema,
+      detail: { tags: ["Admin"], summary: "Update application settings" },
+    }
   )
 
   .delete(

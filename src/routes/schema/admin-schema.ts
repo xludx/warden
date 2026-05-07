@@ -33,6 +33,10 @@ export const ConfigureOAuthSchema = z.object({
   redirectUri: z.string().url(),
 });
 
+export const UpdateApplicationSchema = z.object({
+  allowRegistration: z.boolean().optional(),
+});
+
 export const IdParamSchema = z.object({
   id: z.string().min(1),
 });

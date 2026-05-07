@@ -95,11 +95,17 @@ export const api = {
   // Applications
   listApplications: () => request<Application[]>(`/api/admin/applications`, { action: 'Load applications' }),
   getApplication: (id: string) => request<Application>(`/api/admin/applications/${id}`, { action: 'Load application details' }),
-  createApplication: (name: string, slug: string) =>
+  createApplication: (name: string, slug: string, allowRegistration?: boolean) =>
     request<Application>(`/api/admin/applications`, {
       action: 'Create application',
       method: 'POST',
-      body: JSON.stringify({ name, slug }),
+      body: JSON.stringify({ name, slug, ...(allowRegistration !== undefined ? { allowRegistration } : {}) }),
+    }),
+  updateApplication: (id: string, data: { allowRegistration?: boolean }) =>
+    request<Application>(`/api/admin/applications/${id}`, {
+      action: 'Update application',
+      method: 'PATCH',
+      body: JSON.stringify(data),
     }),
   deleteApplication: (id: string) =>
     request<void>(`/api/admin/applications/${id}`, { action: 'Delete application', method: 'DELETE' }),
@@ -156,6 +162,21 @@ export const api = {
   deleteApiKey: (id: string) =>
     request<void>(`/api/admin/api-keys/${id}`, { action: 'Revoke API key', method: 'DELETE' }),
 
+  // OAuth Providers
+  listOAuthProviders: (appId: string) =>
+    request<OAuthProvider[]>(`/api/admin/applications/${appId}/oauth-providers`, { action: 'Load OAuth providers' }),
+  configureOAuthProvider: (appId: string, data: { provider: 'google' | 'github'; clientId: string; clientSecret: string; scopes?: string; redirectUri: string }) =>
+    request<OAuthProvider>(`/api/admin/applications/${appId}/oauth-providers`, {
+      action: 'Configure OAuth provider',
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  deleteOAuthProvider: (appId: string, providerId: string) =>
+    request<void>(`/api/admin/applications/${appId}/oauth-providers/${providerId}`, {
+      action: 'Remove OAuth provider',
+      method: 'DELETE',
+    }),
+
   // Audit
   listAudit: (params?: { limit?: number; offset?: number; action?: string; actorId?: string; targetType?: string; appId?: string }) => {
     const qs = new URLSearchParams();
@@ -185,6 +206,18 @@ export type Application = {
   name: string;
   slug: string;
   jwtSecret: string;
+  allowRegistration: boolean;
+  createdAt: string;
+};
+
+export type OAuthProvider = {
+  id: string;
+  appId: string;
+  provider: 'google' | 'github';
+  clientId: string;
+  clientSecret: string;
+  scopes: string | null;
+  redirectUri: string;
   createdAt: string;
 };
 
