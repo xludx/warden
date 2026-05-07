@@ -25,14 +25,14 @@ function stripUser(u: typeof users.$inferSelect): SafeUser {
 export class AdminService {
   // ── Applications ──────────────────────────────────
 
-  async createApplication(name: string, slug: string): Promise<typeof applications.$inferSelect> {
+  async createApplication(name: string, slug: string, allowRegistration?: boolean): Promise<typeof applications.$inferSelect> {
     const existing = await db.select({ id: applications.id }).from(applications).where(eq(applications.slug, slug)).limit(1);
     if (existing.length > 0) throw new ConflictError(`Application slug '${slug}' already taken`);
 
     const id = nanoid();
     const jwtSecret = nanoid(48);
 
-    await db.insert(applications).values({ id, name, slug, jwtSecret });
+    await db.insert(applications).values({ id, name, slug, jwtSecret, ...(allowRegistration !== undefined ? { allowRegistration } : {}) });
     logger.info({ appId: id, slug }, "Application created");
 
     const rows = await db.select().from(applications).where(eq(applications.id, id)).limit(1);

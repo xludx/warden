@@ -30,7 +30,7 @@ export const adminRoutes = new Elysia({ prefix: "/api/admin" })
     "/applications",
     async ({ body, headers, set }) => {
       const { user } = await requireWardenAdmin(headers);
-      const app = await adminService.createApplication(body.name, body.slug);
+      const app = await adminService.createApplication(body.name, body.slug, body.allowRegistration);
       await auditService.log({ action: "application.created", actorId: user.id, actorType: "human", actorName: user.name, targetType: "application", targetId: app.id, targetName: body.name });
       set.status = 201;
       return successResponse(app);

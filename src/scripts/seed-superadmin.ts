@@ -21,7 +21,9 @@ async function seed() {
 
   if (existingApp.length > 0) {
     wardenAppId = existingApp[0].id;
-    logger.info("Warden application already exists, skipping");
+    // Ensure registration stays disabled for the control-plane app
+    await db.update(applications).set({ allowRegistration: false }).where(eq(applications.id, wardenAppId));
+    logger.info("Warden application already exists, ensured registration is disabled");
   } else {
     wardenAppId = nanoid();
     await db.insert(applications).values({
@@ -29,6 +31,7 @@ async function seed() {
       name: "Warden",
       slug: "warden",
       jwtSecret: nanoid(48),
+      allowRegistration: false,
     });
     logger.info({ appId: wardenAppId }, "Warden application created");
   }

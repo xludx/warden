@@ -34,6 +34,7 @@ export class AuthService {
   }): Promise<{ user: SafeUser; token: string }> {
     const app = await this.getApp(input.appId);
     if (!app) throw new NotFoundError("Application", input.appId);
+    if (!app.allowRegistration) throw new ForbiddenError("Registration is disabled for this application");
 
     const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, input.email)).limit(1);
     if (existing.length > 0) {

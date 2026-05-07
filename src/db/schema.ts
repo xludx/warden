@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, jsonb, pgEnum, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, varchar, jsonb, pgEnum, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
 
 // ── Enums ──────────────────────────────────────────────
 
@@ -48,6 +48,7 @@ export const applications = pgTable("applications", {
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 100 }).notNull().unique(),
   jwtSecret: text("jwt_secret").notNull(),
+  allowRegistration: boolean("allow_registration").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
