@@ -39,23 +39,26 @@ class OAuthService {
    */
   async startAuthorization(
     provider: Provider,
-    appId: string,
+    appIdOrSlug: string,
     redirect: string,
   ): Promise<{ redirectUrl: string }> {
+    // Resolve app by ID or slug
+    const app = await this.getApp(appIdOrSlug);
+
     // Look up the OAuth provider config for this app
     const configs = await db.select()
       .from(oauthProviders)
-      .where(and(eq(oauthProviders.appId, appId), eq(oauthProviders.provider, provider)))
+      .where(and(eq(oauthProviders.appId, app.id), eq(oauthProviders.provider, provider)))
       .limit(1);
 
     const config = configs[0];
     if (!config) {
-      throw new NotFoundError(`OAuth provider '${provider}' not configured for this application`);
+      throw new NotFoundError("OAuth provider", `${provider} for app '${app.slug}'`);
     }
 
     // Build a signed state JWT: { appId, redirect, nonce, iat }
     const state = await new SignJWT({
-      appId,
+      appId: app.id,
       redirect,
       nonce: nanoid(16),
       iat: Math.floor(Date.now() / 1000),
@@ -67,8 +70,8 @@ class OAuthService {
 
     const authorizationUrl = buildAuthorizationUrl(provider, config.clientId, config.redirectUri!, scope, state);
 
-    logger.info({ provider, appId }, "OAuth authorization started");
-    await auditService.log({ action: "oauth.started", actorType: "system", targetType: "oauth_provider", targetId: config.id, appId });
+    logger.info({ provider, appId: app.id }, "OAuth authorization started");
+    await auditService.log({ action: "oauth.started", actorType: "system", targetType: "oauth_provider", targetId: config.id, appId: app.id });
 
     return { redirectUrl: authorizationUrl };
   }
@@ -228,8 +231,8 @@ class OAuthService {
       });
     }
 
-    const app = await this.getApp(appId);
     const role = membership.length > 0 ? membership[0].role : "viewer";
+    const app = await this.getApp(appId);
 
     // Sign a JWT for the app
     const userRecord = await db.select().from(users).where(eq(users.id, userId)).limit(1);
