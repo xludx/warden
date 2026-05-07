@@ -62,6 +62,8 @@ export const api = {
 
   // Users
   listUsers: () => request<User[]>(`/api/admin/users`),
+  listAllMemberships: (userId: string) =>
+    request<{ app: Application; role: string }[]>(`/api/admin/users/${userId}/memberships`),
   getUser: (id: string) => request<User>(`/api/admin/users/${id}`),
   deleteUser: (id: string) =>
     request<void>(`/api/admin/users/${id}`, { method: 'DELETE' }),
