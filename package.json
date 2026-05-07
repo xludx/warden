@@ -4,6 +4,8 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
+    "test:api": "bun test tests/api",
+    "verify": "bun run test:api && cd admin && npm run build && npm run test:e2e",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "bun run src/scripts/seed-superadmin.ts"

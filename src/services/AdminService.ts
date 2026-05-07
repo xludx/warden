@@ -50,13 +50,15 @@ export class AdminService {
   }
 
   async deleteApplication(id: string): Promise<void> {
-    await this.getApplication(id);
+    const app = await this.getApplication(id);
+    if (app.slug === "warden") throw new ForbiddenError("The Warden control-plane application cannot be deleted");
     await db.delete(applications).where(eq(applications.id, id));
     logger.info({ appId: id }, "Application deleted");
   }
 
   async rotateAppSecret(id: string): Promise<typeof applications.$inferSelect> {
     const app = await this.getApplication(id);
+    if (app.slug === "warden") throw new ForbiddenError("The Warden control-plane JWT secret cannot be rotated here");
     const newSecret = nanoid(48);
     await db.update(applications).set({ jwtSecret: newSecret }).where(eq(applications.id, id));
     logger.info({ appId: id }, "Application JWT secret rotated");

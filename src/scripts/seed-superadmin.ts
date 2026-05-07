@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users, credentials, applications, memberships } from "@/db/schema";
 import bcrypt from "bcryptjs";
@@ -33,16 +33,20 @@ async function seed() {
     logger.info({ appId: wardenAppId }, "Warden application created");
   }
 
-  // Create admin user
+  // Create or repair admin user
   const existingUser = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+  const userId = existingUser[0]?.id ?? nanoid();
 
   if (existingUser.length > 0) {
-    logger.info({ email }, "Admin user already exists, skipping");
+    logger.info({ email }, "Admin user already exists");
   } else {
-    const userId = nanoid();
-    const passwordHash = await bcrypt.hash(password, 12);
-
     await db.insert(users).values({ id: userId, email, name, type: "human" });
+    logger.info({ userId, email }, "Admin user created");
+  }
+
+  const existingCredential = await db.select({ id: credentials.id }).from(credentials).where(eq(credentials.userId, userId)).limit(1);
+  if (existingCredential.length === 0) {
+    const passwordHash = await bcrypt.hash(password, 12);
     await db.insert(credentials).values({
       id: nanoid(),
       userId,
@@ -50,14 +54,20 @@ async function seed() {
       provider: "password",
       credentialData: { password_hash: passwordHash },
     });
+    logger.info({ userId, email }, "Admin password credential created");
+  }
+
+  const existingMembership = await db.select({ id: memberships.id }).from(memberships).where(
+    and(eq(memberships.userId, userId), eq(memberships.appId, wardenAppId)),
+  ).limit(1);
+  if (existingMembership.length === 0) {
     await db.insert(memberships).values({
       id: nanoid(),
       userId,
       appId: wardenAppId,
       role: "admin",
     });
-
-    logger.info({ userId, email }, "Admin user created");
+    logger.info({ userId, appId: wardenAppId }, "Admin Warden membership created");
   }
 
   process.exit(0);

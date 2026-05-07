@@ -6,3 +6,9 @@ drizzle/*.sql
 
 docker-compose.override.yml
 admin/dist
+
+.impeccable/
+
+# Playwright
+admin/test-results/
+admin/playwright-report/

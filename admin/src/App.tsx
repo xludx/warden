@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { getToken } from './lib/api';
 import Layout from './components/layout/Layout';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
@@ -18,24 +19,26 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route
-          path="/*"
+          path="/admin/*"
           element={
             <ProtectedRoute>
               <Layout>
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/users" element={<Users />} />
-                  <Route path="/applications" element={<Applications />} />
-                  <Route path="/service-accounts" element={<ServiceAccounts />} />
-                  <Route path="/api-keys" element={<ApiKeys />} />
-                  <Route path="/audit" element={<Audit />} />
+                  <Route index element={<Dashboard />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="applications" element={<Applications />} />
+                  <Route path="service-accounts" element={<ServiceAccounts />} />
+                  <Route path="api-keys" element={<ApiKeys />} />
+                  <Route path="audit" element={<Audit />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

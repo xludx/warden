@@ -1,0 +1,43 @@
+when:
+  - event: push
+    branch: main
+  - event: manual
+
+steps:
+  build-api:
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: registry.kcolb.com/suchventure/warden-api
+      registry: registry.kcolb.com
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+      tags: latest
+      dockerfile: Dockerfile
+      context: .
+
+  build-admin:
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: registry.kcolb.com/suchventure/warden-admin
+      registry: registry.kcolb.com
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+      tags: latest
+      dockerfile: admin/Dockerfile
+      context: admin/
+    depends_on:
+      - build-api
+
+  notify-dockhand-dolores:
+    image: curlimages/curl:latest
+    commands:
+      - curl -X POST https://dockhand.kcolb.com/api/git/stacks/<STACK_ID>/webhook
+    when:
+      event: push
+      branch: main
+    depends_on:
+      - build-admin

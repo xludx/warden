@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { errorHandlerMiddleware } from "@/middleware/error-handler";
 import { requestIdMiddleware } from "@/middleware/request-id";
-import { authMiddleware } from "@/middleware/auth";
+import { authMiddleware, requireAuth } from "@/middleware/auth";
 import { authService } from "@/services/AuthService";
 import {
   RegisterSchema,
@@ -82,7 +82,8 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
 
   .get(
     "/me",
-    async ({ user }) => {
+    async ({ headers }) => {
+      const { user } = await requireAuth(headers);
       const fullUser = await authService.getUser(user.id);
       return successResponse(fullUser);
     },
@@ -91,7 +92,8 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
 
   .post(
     "/api-keys",
-    async ({ user, body, set }) => {
+    async ({ headers, body, set }) => {
+      const { user } = await requireAuth(headers);
       const result = await authService.createApiKey(user.id, body.appId, body.name);
       set.status = 201;
       return successResponse(result);
@@ -104,7 +106,8 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
 
   .get(
     "/api-keys",
-    async ({ user, authApp }) => {
+    async ({ headers }) => {
+      const { user, authApp } = await requireAuth(headers);
       const keys = await authService.listApiKeys(user.id, authApp.id);
       return successResponse(keys);
     },
@@ -113,9 +116,10 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
 
   .delete(
     "/api-keys/:id",
-    async ({ user, params, error }) => {
+    async ({ headers, params, set }) => {
+      const { user } = await requireAuth(headers);
       const parsed = IdParamSchema.safeParse(params);
-      if (!parsed.success) return error(400, { success: false, error: "Invalid ID" });
+      if (!parsed.success) { set.status = 400; return { success: false, error: "Invalid ID" }; }
       await authService.deleteApiKey(user.id, parsed.data.id);
       return successResponse({ deleted: true });
     },
