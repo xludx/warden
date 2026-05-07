@@ -29,8 +29,6 @@ steps:
       tags: latest
       dockerfile: admin/Dockerfile
       context: admin/
-    depends_on:
-      - build-api
 
   notify-dockhand-dolores:
     image: curlimages/curl:latest
