@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, setToken } from '../lib/api';
 
 export default function Login() {
+  const [searchParams] = useSearchParams();
+  const urlError = searchParams.get('error');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,9 +35,9 @@ export default function Login() {
           <p className="mt-1 text-sm text-slate-400">Sign in to open the admin control plane</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          {error && (
+          {(error || urlError) && (
             <div className="rounded-md border border-red-800 bg-red-950/40 px-4 py-2 text-sm text-red-200" role="alert">
-              {error}
+              {urlError || error}
             </div>
           )}
           <div>
