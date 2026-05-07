@@ -39,3 +39,4 @@ steps:
       branch: main
     depends_on:
       - build-admin
+      - build-api
