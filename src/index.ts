@@ -2,10 +2,11 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { env } from "@/util/env";
 import { logger } from "@/util/logger";
-import { testConnection, closeDb } from "@/db";
+import { testConnection, closeDb, runMigrations } from "@/db";
 import { authRoutes } from "@/routes/auth";
 import { adminRoutes } from "@/routes/admin";
 
+await runMigrations();
 await testConnection();
 
 const app = new Elysia()

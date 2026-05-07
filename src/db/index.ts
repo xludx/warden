@@ -1,10 +1,11 @@
 import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import * as schema from "./schema";
 import { env } from "@/util/env";
 import { logger } from "@/util/logger";
 
-const client = postgres(env.DATABASE_URL);
+const client = postgres(env.DATABASE_URL, { max: 1 });
 export const db = drizzle(client, { schema });
 
 export async function closeDb(): Promise<void> {
@@ -17,4 +18,10 @@ export async function testConnection(): Promise<void> {
     throw new Error("Database connection test failed");
   }
   logger.info("Database connection established");
+}
+
+export async function runMigrations(): Promise<void> {
+  logger.info("Running database migrations...");
+  await migrate(db, { migrationsFolder: "./drizzle" });
+  logger.info("Database migrations complete");
 }
