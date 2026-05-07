@@ -7,6 +7,7 @@ const nav = [
   { to: '/users', label: 'Users' },
   { to: '/service-accounts', label: 'Service Accounts' },
   { to: '/api-keys', label: 'API Keys' },
+  { to: '/audit', label: 'Audit Log' },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

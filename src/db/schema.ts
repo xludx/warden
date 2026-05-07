@@ -120,6 +120,29 @@ export const serviceGrants = pgTable("service_grants", {
   index("service_grants_service_idx").on(table.serviceUserId),
 ]);
 
+// ── Audit Events ──────────────────────────────────────
+
+export const auditEvents = pgTable("audit_events", {
+  id: varchar("id", { length: 21 }).primaryKey(),
+  action: varchar("action", { length: 100 }).notNull(), // user.registered, user.login, api_key.created, etc.
+  actorId: varchar("actor_id", { length: 21 }), // who did it (null for system)
+  actorType: varchar("actor_type", { length: 20 }), // "human" | "service" | "system"
+  actorName: varchar("actor_name", { length: 255 }),
+  targetType: varchar("target_type", { length: 50 }), // "user", "application", "api_key", "membership", "service_grant"
+  targetId: varchar("target_id", { length: 21 }),
+  targetName: varchar("target_name", { length: 255 }),
+  appId: varchar("app_id", { length: 21 }), // which app was involved
+  metadata: jsonb("metadata"), // arbitrary extra data
+  ipAddress: varchar("ip_address", { length: 45 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("audit_events_action_idx").on(table.action),
+  index("audit_events_actor_idx").on(table.actorId),
+  index("audit_events_target_idx").on(table.targetType, table.targetId),
+  index("audit_events_app_idx").on(table.appId),
+  index("audit_events_created_idx").on(table.createdAt),
+]);
+
 // ── Passkey Challenges (ephemeral) ─────────────────────
 
 export const passkeyChallenges = pgTable("passkey_challenges", {

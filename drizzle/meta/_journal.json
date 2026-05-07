@@ -8,6 +8,13 @@
       "when": 1778107357501,
       "tag": "0000_unknown_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778116730345,
+      "tag": "0001_nifty_doctor_faustus",
+      "breakpoints": true
     }
   ]
 }

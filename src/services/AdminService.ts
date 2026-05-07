@@ -7,6 +7,7 @@ import { users, credentials, memberships, applications, apiKeys, serviceGrants }
 import { env } from "@/util/env";
 import { logger } from "@/util/logger";
 import { ConflictError, NotFoundError, ForbiddenError } from "@/errors/service-errors";
+import { auditService } from "@/services/AuditService";
 
 type SafeUser = {
   id: string;

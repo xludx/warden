@@ -105,6 +105,19 @@ export const api = {
   listApiKeys: () => request<ApiKey[]>(`/api/admin/api-keys`),
   deleteApiKey: (id: string) =>
     request<void>(`/api/admin/api-keys/${id}`, { method: 'DELETE' }),
+
+  // Audit
+  listAudit: (params?: { limit?: number; offset?: number; action?: string; actorId?: string; targetType?: string; appId?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.limit) qs.set('limit', String(params.limit));
+    if (params?.offset) qs.set('offset', String(params.offset));
+    if (params?.action) qs.set('action', params.action);
+    if (params?.actorId) qs.set('actorId', params.actorId);
+    if (params?.targetType) qs.set('targetType', params.targetType);
+    if (params?.appId) qs.set('appId', params.appId);
+    const query = qs.toString();
+    return request<{ events: AuditEvent[]; total: number }>(`/api/admin/audit${query ? `?${query}` : ''}`);
+  },
 };
 
 // Types
@@ -141,4 +154,19 @@ export type ApiKey = {
   prefix: string;
   createdAt: string;
   lastUsedAt: string | null;
+};
+
+export type AuditEvent = {
+  id: string;
+  action: string;
+  actorId: string | null;
+  actorType: string | null;
+  actorName: string | null;
+  targetType: string | null;
+  targetId: string | null;
+  targetName: string | null;
+  appId: string | null;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  createdAt: string;
 };

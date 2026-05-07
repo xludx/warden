@@ -7,6 +7,7 @@ import Users from './pages/Users';
 import Applications from './pages/Applications';
 import ServiceAccounts from './pages/ServiceAccounts';
 import ApiKeys from './pages/ApiKeys';
+import Audit from './pages/Audit';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!getToken()) return <Navigate to="/login" replace />;
@@ -29,6 +30,7 @@ export default function App() {
                   <Route path="/applications" element={<Applications />} />
                   <Route path="/service-accounts" element={<ServiceAccounts />} />
                   <Route path="/api-keys" element={<ApiKeys />} />
+                  <Route path="/audit" element={<Audit />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>

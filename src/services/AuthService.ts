@@ -8,6 +8,7 @@ import { signJwt } from "@/util/jwt";
 import { env } from "@/util/env";
 import { logger } from "@/util/logger";
 import { ConflictError, NotFoundError, ValidationError, ForbiddenError } from "@/errors/service-errors";
+import { auditService } from "@/services/AuditService";
 
 type SafeUser = {
   id: string;
@@ -69,6 +70,7 @@ export class AuthService {
       app.jwtSecret,
     );
     logger.info({ userId, email: input.email, app: app.slug }, "User registered");
+    await auditService.log({ action: "user.registered", actorId: userId, actorType: "human", actorName: input.name, targetType: "user", targetId: userId, targetName: input.name, appId: app.id });
 
     return {
       user: { id: userId, email: input.email, name: input.name, avatarUrl: null, type: "human", createdAt: new Date() },
@@ -110,6 +112,7 @@ export class AuthService {
       app.jwtSecret,
     );
     logger.info({ userId: user.id, app: app.slug }, "User logged in");
+    await auditService.log({ action: "user.login", actorId: user.id, actorType: "human", actorName: user.name, targetType: "user", targetId: user.id, targetName: user.name, appId: app.id });
 
     return { user: stripUser(user), token };
   }
@@ -137,6 +140,7 @@ export class AuthService {
 
     await db.insert(apiKeys).values({ id, userId, appId, name, keyHash, prefix: displayPrefix });
     logger.info({ apiKeyId: id, userId, appId, name }, "API key created");
+    await auditService.log({ action: "api_key.created", actorId: userId, actorType: "human", actorName: (await this.getUser(userId)).name ?? "", targetType: "api_key", targetId: id, targetName: name, appId });
 
     return { id, key: rawKey, prefix: displayPrefix, name };
   }
@@ -154,6 +158,7 @@ export class AuthService {
     if (key.userId !== userId) throw new NotFoundError("API key", keyId);
     await db.delete(apiKeys).where(eq(apiKeys.id, keyId));
     logger.info({ apiKeyId: keyId, userId }, "API key revoked");
+    await auditService.log({ action: "api_key.revoked", actorId: userId, actorType: "human", targetType: "api_key", targetId: keyId });
   }
 
   async authenticateByApiKey(rawKey: string): Promise<{ user: SafeUser; app: typeof applications.$inferSelect; scopes: string[] }> {
@@ -222,6 +227,7 @@ export class AuthService {
     );
 
     logger.info({ serviceUserId: user.id, sourceApp: sourceApp.slug, audience }, "Client credentials token issued");
+    await auditService.log({ action: "token.client_credentials", actorId: user.id, actorType: "service", actorName: user.name, targetType: "application", targetId: targetApp.id, targetName: audience, appId: sourceApp.id });
 
     return { accessToken: token, expiresIn };
   }
