@@ -25,6 +25,14 @@ export const AddServiceGrantSchema = z.object({
   scopes: z.array(z.string()).min(1),
 });
 
+export const ConfigureOAuthSchema = z.object({
+  provider: z.enum(["google", "github"]),
+  clientId: z.string().min(1),
+  clientSecret: z.string().min(1),
+  scopes: z.string().optional(),
+  redirectUri: z.string().url(),
+});
+
 export const IdParamSchema = z.object({
   id: z.string().min(1),
 });

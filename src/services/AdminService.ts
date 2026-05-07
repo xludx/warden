@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { createHash } from "crypto";
 import { db } from "@/db";
-import { users, credentials, memberships, applications, apiKeys, serviceGrants } from "@/db/schema";
+import { users, credentials, memberships, applications, apiKeys, serviceGrants, oauthProviders } from "@/db/schema";
 import { env } from "@/util/env";
 import { logger } from "@/util/logger";
 import { ConflictError, NotFoundError, ForbiddenError } from "@/errors/service-errors";
@@ -190,6 +190,70 @@ export class AdminService {
 
   async listServiceGrants(serviceUserId: string): Promise<(typeof serviceGrants.$inferSelect)[]> {
     return db.select().from(serviceGrants).where(eq(serviceGrants.serviceUserId, serviceUserId));
+  }
+
+  // ── OAuth Providers ───────────────────────────────
+
+  async configureOAuthProvider(
+    appId: string,
+    provider: "google" | "github",
+    clientId: string,
+    clientSecret: string,
+    scopes: string | undefined,
+    redirectUri: string,
+  ): Promise<typeof oauthProviders.$inferSelect> {
+    const app = await this.getApplication(appId);
+
+    const existing = await db.select({ id: oauthProviders.id })
+      .from(oauthProviders)
+      .where(and(eq(oauthProviders.appId, app.id), eq(oauthProviders.provider, provider)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing config
+      await db.update(oauthProviders)
+        .set({ clientId, clientSecret, scopes: scopes ?? null, redirectUri })
+        .where(eq(oauthProviders.id, existing[0].id));
+
+      const rows = await db.select().from(oauthProviders).where(eq(oauthProviders.id, existing[0].id)).limit(1);
+      logger.info({ appId: app.id, provider }, "OAuth provider updated");
+      return rows[0];
+    }
+
+    await db.insert(oauthProviders).values({
+      id: nanoid(),
+      appId: app.id,
+      provider,
+      clientId,
+      clientSecret,
+      scopes: scopes ?? null,
+      redirectUri,
+    });
+
+    const rows = await db.select().from(oauthProviders).where(
+      and(eq(oauthProviders.appId, app.id), eq(oauthProviders.provider, provider)),
+    ).limit(1);
+    logger.info({ appId: app.id, provider }, "OAuth provider configured");
+    return rows[0];
+  }
+
+  async listOAuthProviders(appId: string): Promise<(typeof oauthProviders.$inferSelect)[]> {
+    await this.getApplication(appId);
+    return db.select().from(oauthProviders).where(eq(oauthProviders.appId, appId));
+  }
+
+  async deleteOAuthProvider(appId: string, providerId: string): Promise<void> {
+    await this.getApplication(appId);
+    const rows = await db.select({ id: oauthProviders.id, appId: oauthProviders.appId })
+      .from(oauthProviders)
+      .where(eq(oauthProviders.id, providerId))
+      .limit(1);
+
+    if (rows.length === 0) throw new NotFoundError("OAuth provider", providerId);
+    if (rows[0].appId !== appId) throw new NotFoundError("OAuth provider", providerId);
+
+    await db.delete(oauthProviders).where(eq(oauthProviders.id, providerId));
+    logger.info({ appId, providerId }, "OAuth provider deleted");
   }
 
   // ── API Keys (admin view) ─────────────────────────

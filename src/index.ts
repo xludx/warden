@@ -5,6 +5,7 @@ import { logger } from "@/util/logger";
 import { testConnection, closeDb, runMigrations } from "@/db";
 import { authRoutes } from "@/routes/auth";
 import { adminRoutes } from "@/routes/admin";
+import { oauthRoutes } from "@/routes/oauth";
 
 await runMigrations();
 await testConnection();
@@ -13,6 +14,7 @@ const app = new Elysia()
   .use(cors({ origin: true, credentials: true }))
   .use(authRoutes)
   .use(adminRoutes)
+  .use(oauthRoutes)
   .get("/", () => "Warden Auth Service")
   .listen(env.PORT);
 

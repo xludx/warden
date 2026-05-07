@@ -10,6 +10,7 @@ import {
   RemoveMembershipSchema,
   CreateServiceAccountSchema,
   AddServiceGrantSchema,
+  ConfigureOAuthSchema,
   IdParamSchema,
 } from "@/routes/schema/admin-schema";
 import { successResponse, listResponse } from "@/util/response-helpers";
@@ -237,6 +238,50 @@ export const adminRoutes = new Elysia({ prefix: "/api/admin" })
       return successResponse({ deleted: true });
     },
     { detail: { tags: ["Admin"], summary: "Revoke any API key" } }
+  )
+
+  // ── OAuth Providers ──────────────────────────────
+
+  .post(
+    "/applications/:id/oauth-providers",
+    async ({ params, body, headers, set }) => {
+      await requireWardenAdmin(headers);
+      const id = validateId(params);
+      if (!id) { set.status = 400; return { success: false, error: "Invalid ID" }; }
+      const result = await adminService.configureOAuthProvider(
+        id, body.provider, body.clientId, body.clientSecret, body.scopes, body.redirectUri,
+      );
+      set.status = 200;
+      return successResponse(result);
+    },
+    {
+      body: ConfigureOAuthSchema,
+      detail: { tags: ["Admin"], summary: "Configure an OAuth provider for an application" },
+    }
+  )
+
+  .get(
+    "/applications/:id/oauth-providers",
+    async ({ params, headers, set }) => {
+      await requireWardenAdmin(headers);
+      const id = validateId(params);
+      if (!id) { set.status = 400; return { success: false, error: "Invalid ID" }; }
+      return listResponse(await adminService.listOAuthProviders(id));
+    },
+    { detail: { tags: ["Admin"], summary: "List OAuth providers for an application" } }
+  )
+
+  .delete(
+    "/applications/:id/oauth-providers/:providerId",
+    async ({ params, headers, set }) => {
+      await requireWardenAdmin(headers);
+      const id = validateId(params);
+      const providerId = (params as { providerId?: string }).providerId;
+      if (!id || !providerId) { set.status = 400; return { success: false, error: "Invalid ID" }; }
+      await adminService.deleteOAuthProvider(id, providerId);
+      return successResponse({ deleted: true });
+    },
+    { detail: { tags: ["Admin"], summary: "Remove an OAuth provider configuration" } }
   )
 
   // ── Audit Events ────────────────────────────────
