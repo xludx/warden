@@ -28,7 +28,7 @@ export default function Login() {
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-slate-100">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <img src="/warden-cat-no-bg.png" alt="Warden logo" className="mx-auto h-10 w-10 rounded-sm object-cover" />
+          <img src="/warden-cat-no-bg.png" alt="Warden logo" className="mx-auto h-32 w-32 rounded-sm object-cover" />
           <h1 className="mt-3 text-2xl font-semibold text-slate-50">Warden</h1>
           <p className="mt-1 text-sm text-slate-400">Sign in to open the admin control plane</p>
         </div>
