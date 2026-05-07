@@ -26,7 +26,7 @@ export default function Landing() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
         <nav className="flex items-center justify-between border-b border-slate-700/30 pb-5" aria-label="Public navigation">
           <Link to="/" className="flex items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-300">
-            <span className="grid h-9 w-9 place-items-center rounded-sm border border-blue-300/30 bg-blue-500/10 text-lg text-blue-100" aria-hidden="true">▣</span>
+            <img src="/warden-cat-no-bg.png" alt="Warden logo" className="h-9 w-9 rounded-sm object-cover" />
             <span>
               <span className="block text-sm font-semibold tracking-wide text-slate-50">Warden</span>
               <span className="block text-xs text-slate-400">Identity control plane</span>
