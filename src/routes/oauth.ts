@@ -25,9 +25,10 @@ export const oauthRoutes = new Elysia({ prefix: "/api/auth/oauth" })
       const redirect = (query as Record<string, string>).redirect ?? "/login";
 
       const result = await oauthService.startAuthorization(provider, appId, redirect);
-      set.redirect = result.redirectUrl;
+      // Use direct redirect instead of set.redirect to avoid content-type issues
+      set.headers["Location"] = result.redirectUrl;
       set.status = 302;
-      return;
+      return new Response(null, { status: 302, headers: { Location: result.redirectUrl } });
     },
     { detail: { tags: ["Auth"], summary: "Start OAuth authorization flow" } }
   )
@@ -57,13 +58,10 @@ export const oauthRoutes = new Elysia({ prefix: "/api/auth/oauth" })
         const result = await oauthService.handleCallback(provider, code, state, oauthError);
 
         const targetUrl = `${result.redirect}?token=${result.token}`;
-        set.redirect = targetUrl;
-        set.status = 302;
-        return;
+        return new Response(null, { status: 302, headers: { Location: targetUrl } });
       } catch (err) {
-        set.redirect = `/login?error=${encodeURIComponent((err as Error).message)}`;
-        set.status = 302;
-        return;
+        const errorUrl = `/login?error=${encodeURIComponent((err as Error).message)}`;
+        return new Response(null, { status: 302, headers: { Location: errorUrl } });
       }
     },
     { detail: { tags: ["Auth"], summary: "Handle OAuth callback" } }
