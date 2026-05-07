@@ -37,9 +37,6 @@ services:
       timeout: 5s
       retries: 5
 
-volumes:
-  pgdata:
-
   admin:
     build: ./admin
     container_name: warden-admin
@@ -49,7 +46,7 @@ volumes:
     depends_on:
       - api
     healthcheck:
-      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:80/" ]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/"]
       interval: 30s
       timeout: 5s
       retries: 3
