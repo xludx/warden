@@ -15,6 +15,13 @@
       "when": 1778116730345,
       "tag": "0001_nifty_doctor_faustus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778175208823,
+      "tag": "0002_flashy_pyro",
+      "breakpoints": true
     }
   ]
 }

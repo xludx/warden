@@ -5,7 +5,7 @@ import { pgTable, text, timestamp, varchar, jsonb, pgEnum, index, uniqueIndex } 
 export const userTypeEnum = pgEnum("user_type", ["human", "service"]);
 export const credentialTypeEnum = pgEnum("credential_type", ["password", "oauth", "passkey"]);
 export const oauthProviderEnum = pgEnum("oauth_provider", ["google", "github"]);
-export const membershipRoleEnum = pgEnum("membership_role", ["admin", "editor", "viewer"]);
+// membership_role was previously a pgEnum — now a free-form varchar so each application can define its own roles
 
 // ── Users ──────────────────────────────────────────────
 
@@ -61,7 +61,7 @@ export const memberships = pgTable("memberships", {
   appId: varchar("app_id", { length: 21 })
     .notNull()
     .references(() => applications.id, { onDelete: "cascade" }),
-  role: membershipRoleEnum("role").notNull().default("viewer"),
+  role: varchar("role", { length: 100 }).notNull().default("viewer"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index("memberships_user_idx").on(table.userId),

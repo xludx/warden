@@ -87,7 +87,7 @@ export class AdminService {
 
   // ── Memberships ──────────────────────────────────
 
-  async addMembership(userId: string, appId: string, role: "admin" | "editor" | "viewer"): Promise<void> {
+  async addMembership(userId: string, appId: string, role: string): Promise<void> {
     await this.getUser(userId);
     await this.getApplication(appId);
 

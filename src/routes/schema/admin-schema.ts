@@ -7,7 +7,7 @@ export const CreateApplicationSchema = z.object({
 
 export const AddMembershipSchema = z.object({
   appId: z.string().min(1),
-  role: z.enum(["admin", "editor", "viewer"]).default("viewer"),
+  role: z.string().min(1).max(100).default("viewer"),
 });
 
 export const RemoveMembershipSchema = z.object({
