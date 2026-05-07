@@ -35,7 +35,7 @@ steps:
   notify-dockhand-dolores:
     image: curlimages/curl:latest
     commands:
-      - curl -X POST https://dockhand.kcolb.com/api/git/stacks/<STACK_ID>/webhook
+      - curl -X POST https://dockhand.kcolb.com/api/git/stacks/49/webhook
     when:
       event: push
       branch: main
