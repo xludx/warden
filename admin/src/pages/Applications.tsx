@@ -26,7 +26,8 @@ function OAuthProviderForm({
   const [provider, setProvider] = useState<'google' | 'github'>('google');
   const [clientId, setClientId] = useState('');
   const [clientSecret, setClientSecret] = useState('');
-  const [redirectUri, setRedirectUri] = useState('');
+  const baseRedirect = 'https://warden.kcolb.com/api/auth/oauth';
+  const [redirectUri, setRedirectUri] = useState(`${baseRedirect}/google/callback`);
   const [scopes, setScopes] = useState('openid email profile');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -54,12 +55,39 @@ function OAuthProviderForm({
   return (
     <form onSubmit={handleSubmit} className="mt-3 rounded-lg border border-slate-700 bg-slate-950 p-3">
       {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
+      <details className="mb-3 rounded-md bg-slate-900 p-3">
+        <summary className="cursor-pointer text-xs font-medium text-slate-400 hover:text-slate-200">Setup instructions</summary>
+        <div className="mt-2 space-y-3 text-xs text-slate-400">
+          {provider === 'google' && (
+            <>
+              <p><strong className="text-slate-200">1.</strong> Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">Google Cloud Console → Credentials</a></p>
+              <p><strong className="text-slate-200">2.</strong> Create an OAuth 2.0 Client ID (Web application type)</p>
+              <p><strong className="text-slate-200">3.</strong> Add this Authorized Redirect URI:</p>
+              <pre className="rounded bg-slate-800 p-2 font-mono text-xs break-all">{redirectUri}</pre>
+              <p><strong className="text-slate-200">4.</strong> Copy the Client ID and Client Secret into the fields below</p>
+            </>
+          )}
+          {provider === 'github' && (
+            <>
+              <p><strong className="text-slate-200">1.</strong> Go to <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">GitHub Settings → Developer settings → OAuth Apps</a></p>
+              <p><strong className="text-slate-200">2.</strong> Register a new OAuth application</p>
+              <p><strong className="text-slate-200">3.</strong> Set this as the Authorization callback URL:</p>
+              <pre className="rounded bg-slate-800 p-2 font-mono text-xs break-all">{redirectUri}</pre>
+              <p><strong className="text-slate-200">4.</strong> Copy the Client ID and Client Secret into the fields below</p>
+            </>
+          )}
+        </div>
+      </details>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-xs text-slate-400">Provider</label>
           <select
             value={provider}
-            onChange={(e) => setProvider(e.target.value as 'google' | 'github')}
+            onChange={(e) => {
+              const p = e.target.value as 'google' | 'github';
+              setProvider(p);
+              setRedirectUri(`${baseRedirect}/${p}/callback`);
+            }}
             className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="google">Google</option>
