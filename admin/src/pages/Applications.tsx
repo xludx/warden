@@ -227,9 +227,9 @@ export default function Applications() {
 
   const handleUpdateRegistration = async (app: Application, value: boolean) => {
     try {
-      await api.updateApplication(app.id, { allowRegistration: value });
+      const updated = await api.updateApplication(app.id, { allowRegistration: value });
+      setApps((prev) => prev.map((a) => a.id === app.id ? { ...a, allowRegistration: updated.allowRegistration } : a));
       setSuccess(`${app.name}: registration is now ${value ? 'enabled' : 'disabled'}.`);
-      load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update registration setting');
     }
