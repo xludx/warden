@@ -36,45 +36,74 @@ export class AuthService {
     if (!app) throw new NotFoundError("Application", input.appId);
     if (!app.allowRegistration) throw new ForbiddenError("Registration is disabled for this application");
 
-    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, input.email)).limit(1);
-    if (existing.length > 0) {
-      throw new ConflictError("Email already registered");
+    const role = app.defaultRole;
+
+    // Check if user already exists in Warden
+    const existingRows = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
+    const existingUser = existingRows[0];
+
+    let userId: string;
+    let userName: string;
+
+    if (existingUser) {
+      // Existing user — verify they own this email by checking password
+      const credRows = await db.select().from(credentials).where(
+        and(eq(credentials.userId, existingUser.id), eq(credentials.type, "password")),
+      ).limit(1);
+      const cred = credRows[0];
+      if (!cred) throw new ValidationError("Invalid email or password");
+
+      const passwordHash = (cred.credentialData as { password_hash: string }).password_hash;
+      const valid = await bcrypt.compare(input.password, passwordHash);
+      if (!valid) throw new ValidationError("Invalid email or password");
+
+      // Check if already a member of this app
+      const existingMembership = await this.getMembership(existingUser.id, app.id);
+      if (existingMembership) throw new ConflictError("Already registered for this application");
+
+      userId = existingUser.id;
+      userName = existingUser.name;
+    } else {
+      // New user — create user + credentials
+      userId = nanoid();
+      userName = input.name;
+      const passwordHash = await bcrypt.hash(input.password, env.BCRYPT_ROUNDS);
+
+      await db.insert(users).values({
+        id: userId,
+        email: input.email,
+        name: userName,
+        type: "human",
+      });
+
+      await db.insert(credentials).values({
+        id: nanoid(),
+        userId,
+        type: "password",
+        provider: "password",
+        credentialData: { password_hash: passwordHash },
+      });
+
+      await auditService.log({ action: "user.created", actorId: userId, actorType: "human", actorName: userName, targetType: "user", targetId: userId, targetName: userName });
     }
 
-    const userId = nanoid();
-    const passwordHash = await bcrypt.hash(input.password, env.BCRYPT_ROUNDS);
-
-    await db.insert(users).values({
-      id: userId,
-      email: input.email,
-      name: input.name,
-      type: "human",
-    });
-
-    await db.insert(credentials).values({
-      id: nanoid(),
-      userId,
-      type: "password",
-      provider: "password",
-      credentialData: { password_hash: passwordHash },
-    });
-
+    // Create membership for this app
     await db.insert(memberships).values({
       id: nanoid(),
       userId,
       appId: app.id,
-      role: "viewer",
+      role,
     });
 
     const token = await signJwt(
-      { sub: userId, email: input.email, name: input.name, app: app.slug, role: "viewer", type: "human" },
+      { sub: userId, email: input.email, name: userName, app: app.slug, role, type: "human" },
       app.jwtSecret,
     );
     logger.info({ userId, email: input.email, app: app.slug }, "User registered");
-    await auditService.log({ action: "user.registered", actorId: userId, actorType: "human", actorName: input.name, targetType: "user", targetId: userId, targetName: input.name, appId: app.id });
+    await auditService.log({ action: "user.registered", actorId: userId, actorType: "human", actorName: userName, targetType: "user", targetId: userId, targetName: userName, appId: app.id });
 
     return {
-      user: { id: userId, email: input.email, name: input.name, avatarUrl: null, type: "human", createdAt: new Date() },
+      user: { id: userId, email: input.email, name: userName, avatarUrl: null, type: "human", createdAt: new Date() },
       token,
     };
   }

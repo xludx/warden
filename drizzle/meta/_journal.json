@@ -36,6 +36,13 @@
       "when": 1778197646389,
       "tag": "0004_far_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778198200000,
+      "tag": "0005_add_default_role",
+      "breakpoints": true
     }
   ]
 }

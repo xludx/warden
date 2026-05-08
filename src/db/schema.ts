@@ -49,6 +49,7 @@ export const applications = pgTable("applications", {
   slug: varchar("slug", { length: 100 }).notNull().unique(),
   jwtSecret: text("jwt_secret").notNull(),
   allowRegistration: boolean("allow_registration").notNull().default(true),
+  defaultRole: varchar("default_role", { length: 50 }).notNull().default("viewer"),
   allowedRedirectUris: text("allowed_redirect_uris"), // JSON array of valid redirect URIs for the authorization code flow
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
