@@ -49,6 +49,7 @@ export const applications = pgTable("applications", {
   slug: varchar("slug", { length: 100 }).notNull().unique(),
   jwtSecret: text("jwt_secret").notNull(),
   allowRegistration: boolean("allow_registration").notNull().default(true),
+  allowedRedirectUris: text("allowed_redirect_uris"), // JSON array of valid redirect URIs for the authorization code flow
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -143,6 +144,23 @@ export const auditEvents = pgTable("audit_events", {
   index("audit_events_app_idx").on(table.appId),
   index("audit_events_created_idx").on(table.createdAt),
 ]);
+
+// ── Authorization Codes (single-use, ephemeral) ──────
+
+export const authCodes = pgTable("auth_codes", {
+  id: varchar("id", { length: 21 }).primaryKey(),
+  appId: varchar("app_id", { length: 21 })
+    .notNull()
+    .references(() => applications.id, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 21 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  code: varchar("code", { length: 64 }).notNull().unique(),
+  redirectUri: text("redirect_uri").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 // ── Passkey Challenges (ephemeral) ─────────────────────
 

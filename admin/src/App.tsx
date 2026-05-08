@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
-import { getToken, setToken } from './lib/api';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useNavigate } from 'react-router-dom';
+import { getToken, setToken, clearToken } from './lib/api';
 import Layout from './components/layout/Layout';
 import Landing from './pages/Landing';
+import AuthorizePage from './pages/Authorize';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
@@ -9,6 +10,13 @@ import Applications from './pages/Applications';
 import ServiceAccounts from './pages/ServiceAccounts';
 import ApiKeys from './pages/ApiKeys';
 import Audit from './pages/Audit';
+
+function LogoutRedirect() {
+  clearToken();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect') ?? '/';
+  return <Navigate to={redirect} replace />;
+}
 
 function OAuthCapture() {
   const [searchParams] = useSearchParams();
@@ -35,6 +43,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/authorize" element={<AuthorizePage />} />
+        <Route path="/logout" element={<LogoutRedirect />} />
         <Route
           path="/admin/*"
           element={

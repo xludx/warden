@@ -461,6 +461,16 @@ export default function Applications() {
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${app.allowRegistration ? 'translate-x-6' : 'translate-x-1'}`} />
                           </button>
                         </div>
+
+                        <div className="mt-4">
+                          <p className="mb-2 text-sm font-medium text-slate-200">Allowed redirect URIs</p>
+                          <p className="mb-2 text-xs text-slate-400">Used for the OAuth authorization code flow. Apps can redirect users here after Warden authentication.</p>
+                          <RedirectUriEditor
+                            appId={app.id}
+                            uris={app.allowedRedirectUris ? (() => { try { return JSON.parse(app.allowedRedirectUris); } catch { return []; } })() : []}
+                            onSaved={() => load()}
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -524,5 +534,73 @@ function RelationshipStat({ label, value, help }: { label: string; value: number
       <p className="mt-1 text-lg font-semibold text-slate-100">{value}</p>
       <p className="mt-1 truncate text-xs text-slate-400">{help}</p>
     </section>
+  );
+}
+
+function RedirectUriEditor({ appId, uris, onSaved }: { appId: string; uris: string[]; onSaved: () => void }) {
+  const [items, setItems] = useState<string[]>(uris);
+  const [newUri, setNewUri] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleAdd = () => {
+    if (!newUri.trim()) return;
+    try { new URL(newUri); } catch { setError('Invalid URL'); return; }
+    setItems([...items, newUri.trim()]);
+    setNewUri('');
+    setError('');
+  };
+
+  const handleRemove = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      await api.updateApplication(appId, { allowedRedirectUris: items });
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
+      <div className="mb-2 flex gap-2">
+        <input
+          value={newUri}
+          onChange={(e) => setNewUri(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}
+          placeholder="https://app.example.com/auth/callback"
+          className="flex-1 rounded-md border border-slate-700 bg-slate-800 px-3 py-1.5 text-sm text-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button type="button" onClick={handleAdd} className="rounded-md bg-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-600">Add</button>
+      </div>
+      {items.length === 0 ? (
+        <p className="text-xs text-slate-500">No redirect URIs configured. Any redirect URI will be accepted.</p>
+      ) : (
+        <ul className="mb-3 space-y-1">
+          {items.map((uri, i) => (
+            <li key={i} className="flex items-center justify-between rounded-md bg-slate-900 px-3 py-1.5">
+              <span className="truncate text-xs text-slate-300">{uri}</span>
+              <button type="button" onClick={() => handleRemove(i)} className="ml-2 shrink-0 text-xs text-red-400 hover:text-red-300">Remove</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-blue-50 hover:bg-blue-500 disabled:opacity-60"
+      >
+        {saving ? 'Saving...' : 'Save URIs'}
+      </button>
+    </div>
   );
 }

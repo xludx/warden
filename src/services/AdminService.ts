@@ -56,11 +56,21 @@ export class AdminService {
     logger.info({ appId: id }, "Application deleted");
   }
 
-  async updateApplication(id: string, data: { allowRegistration?: boolean }): Promise<typeof applications.$inferSelect> {
+  async updateApplication(id: string, data: { allowRegistration?: boolean; allowedRedirectUris?: string[] }): Promise<typeof applications.$inferSelect> {
     const app = await this.getApplication(id);
+    const updates: Record<string, unknown> = {};
+
     if (data.allowRegistration !== undefined) {
-      await db.update(applications).set({ allowRegistration: data.allowRegistration }).where(eq(applications.id, id));
-      logger.info({ appId: id, allowRegistration: data.allowRegistration }, "Application updated");
+      updates.allowRegistration = data.allowRegistration;
+    }
+
+    if (data.allowedRedirectUris !== undefined) {
+      updates.allowedRedirectUris = JSON.stringify(data.allowedRedirectUris);
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await db.update(applications).set(updates).where(eq(applications.id, id));
+      logger.info({ appId: id, ...updates }, "Application updated");
     }
     const rows = await db.select().from(applications).where(eq(applications.id, id)).limit(1);
     return rows[0];

@@ -7,7 +7,6 @@ import {
   RegisterSchema,
   LoginSchema,
   CreateApiKeySchema,
-  ClientCredentialsSchema,
   VerifySchema,
   IdParamSchema,
 } from "@/routes/schema/auth-schema";
@@ -44,25 +43,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
     }
   )
 
-  .post(
-    "/token",
-    async ({ body }) => {
-      const result = await authService.clientCredentialsGrant(
-        body.client_id,
-        body.client_secret,
-        body.audience,
-      );
-      return successResponse({
-        access_token: result.accessToken,
-        token_type: "Bearer",
-        expires_in: result.expiresIn,
-      });
-    },
-    {
-      body: ClientCredentialsSchema,
-      detail: { tags: ["Auth"], summary: "OAuth2 client credentials grant" },
-    }
-  )
+
 
   .post(
     "/verify",

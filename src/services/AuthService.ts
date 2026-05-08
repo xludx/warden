@@ -106,7 +106,8 @@ export class AuthService {
     }
 
     const membership = await this.getMembership(user.id, app.id);
-    const role = membership?.role ?? "viewer";
+    if (!membership) throw new ValidationError("Invalid email or password");
+    const role = membership.role;
 
     const token = await signJwt(
       { sub: user.id, email: user.email!, name: user.name, app: app.slug, role, type: "human" },

@@ -6,6 +6,7 @@ import { testConnection, closeDb, runMigrations } from "@/db";
 import { authRoutes } from "@/routes/auth";
 import { adminRoutes } from "@/routes/admin";
 import { oauthRoutes } from "@/routes/oauth";
+import { oidcRoutes } from "@/routes/oidc";
 
 await runMigrations();
 await testConnection();
@@ -15,6 +16,7 @@ const app = new Elysia()
   .use(authRoutes)
   .use(adminRoutes)
   .use(oauthRoutes)
+  .use(oidcRoutes)
   .get("/", () => "Warden Auth Service")
   .listen(env.PORT);
 

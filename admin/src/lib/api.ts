@@ -101,7 +101,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ name, slug, ...(allowRegistration !== undefined ? { allowRegistration } : {}) }),
     }),
-  updateApplication: (id: string, data: { allowRegistration?: boolean }) =>
+  updateApplication: (id: string, data: { allowRegistration?: boolean; allowedRedirectUris?: string[] }) =>
     request<Application>(`/api/admin/applications/${id}`, {
       action: 'Update application',
       method: 'PATCH',
@@ -207,6 +207,7 @@ export type Application = {
   slug: string;
   jwtSecret: string;
   allowRegistration: boolean;
+  allowedRedirectUris: string | null;
   createdAt: string;
 };
 

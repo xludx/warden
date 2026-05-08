@@ -35,6 +35,7 @@ export const ConfigureOAuthSchema = z.object({
 
 export const UpdateApplicationSchema = z.object({
   allowRegistration: z.boolean().optional(),
+  allowedRedirectUris: z.array(z.string().url()).optional(),
 });
 
 export const IdParamSchema = z.object({

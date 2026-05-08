@@ -25,7 +25,9 @@ export type AuditAction =
   | "oauth.started"
   | "oauth.callback"
   | "passkey.registered"
-  | "passkey.authenticated";
+  | "passkey.authenticated"
+  | "auth_code.issued"
+  | "auth_code.redeemed";
 
 type AuditInput = {
   action: AuditAction | string;
