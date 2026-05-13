@@ -40,3 +40,23 @@ steps:
     depends_on:
       - build-admin
       - build-api
+
+  deploy:
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        from_secret: dolores_host
+      username: juha
+      password:
+        from_secret: dolores_password
+      port: 22
+      script:
+        - docker pull registry.kcolb.com/suchventure/warden-api:latest
+        - docker pull registry.kcolb.com/suchventure/warden-admin:latest
+        - cd /srv/data/infra/stacks/dolores/warden && docker compose up -d
+    when:
+      event: push
+      branch: main
+    depends_on:
+      - build-admin
+      - build-api
