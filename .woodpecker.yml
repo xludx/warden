@@ -30,17 +30,6 @@ steps:
       dockerfile: admin/Dockerfile
       context: admin/
 
-  notify-dockhand-dolores:
-    image: curlimages/curl:latest
-    commands:
-      - curl -X POST https://dockhand.kcolb.com/api/git/stacks/49/webhook
-    when:
-      event: push
-      branch: main
-    depends_on:
-      - build-admin
-      - build-api
-
   deploy:
     image: appleboy/drone-ssh
     settings:
