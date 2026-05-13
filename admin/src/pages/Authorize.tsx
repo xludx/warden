@@ -40,6 +40,39 @@ export default function Authorize() {
       .finally(() => setLoading(false));
   }, [clientId, redirectUri, state]);
 
+  // Auto-confirm when a token is present (logged in via email/pass or coming back from OAuth)
+  useEffect(() => {
+    const token = searchParams.get('token') || getToken();
+    if (token && info && !submitting) {
+      if (searchParams.get('token')) setToken(searchParams.get('token')!);
+      const doConfirm = async () => {
+        setSubmitting(true);
+        setError('');
+        try {
+          const res = await fetch('/api/auth/authorize/confirm', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ client_id: clientId, redirect_uri: redirectUri, state }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.location.href = data.data.redirectUrl;
+          } else {
+            setError(data.error ?? 'Authorization could not be completed');
+          }
+        } catch {
+          setError('Authorization request failed');
+        } finally {
+          setSubmitting(false);
+        }
+      };
+      doConfirm();
+    }
+  }, [info, searchParams, clientId, redirectUri, state, submitting]);
+
   const handleConfirm = async () => {
     const token = getToken();
     if (!token) {

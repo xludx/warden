@@ -11,6 +11,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const redirect = searchParams.get('redirect') || '/admin';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -18,7 +20,7 @@ export default function Login() {
     try {
       const { token } = await api.login(email, password);
       setToken(token);
-      navigate('/admin');
+      navigate(redirect);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed. Check your credentials and try again.');
     } finally {
@@ -85,7 +87,7 @@ export default function Login() {
 
           <div className="mt-4 grid gap-3">
             <a
-              href="/api/auth/oauth/google/authorize?appId=warden&redirect=/admin"
+              href={`/api/auth/oauth/google/authorize?appId=warden&redirect=${encodeURIComponent(redirect)}`}
               className="flex w-full items-center justify-center gap-3 rounded-md border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
@@ -97,7 +99,7 @@ export default function Login() {
               Google
             </a>
             <a
-              href="/api/auth/oauth/github/authorize?appId=warden&redirect=/admin"
+              href={`/api/auth/oauth/github/authorize?appId=warden&redirect=${encodeURIComponent(redirect)}`}
               className="flex w-full items-center justify-center gap-3 rounded-md border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

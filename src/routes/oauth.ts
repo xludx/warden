@@ -57,7 +57,9 @@ export const oauthRoutes = new Elysia({ prefix: "/api/auth/oauth" })
       try {
         const result = await oauthService.handleCallback(provider, code, state, oauthError);
 
-        const targetUrl = `${result.redirect}?token=${result.token}`;
+        // Build the redirect URL, appending token with correct separator
+        const separator = result.redirect.includes('?') ? '&' : '?';
+        const targetUrl = `${result.redirect}${separator}token=${result.token}`;
         return new Response(null, { status: 302, headers: { Location: targetUrl } });
       } catch (err) {
         const errorUrl = `/login?error=${encodeURIComponent((err as Error).message)}`;
