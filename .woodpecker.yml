@@ -53,7 +53,7 @@ steps:
       script:
         - docker pull registry.kcolb.com/suchventure/warden-api:latest
         - docker pull registry.kcolb.com/suchventure/warden-admin:latest
-        - cd /srv/data/infra/stacks/dolores/warden && docker compose up -d --force-recreate --remove-orphans
+        - cd /srv/data/infra/stacks/dolores/warden && docker compose down --remove-orphans && docker compose up -d
     when:
       event: push
       branch: main
