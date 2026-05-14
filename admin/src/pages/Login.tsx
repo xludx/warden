@@ -20,7 +20,9 @@ export default function Login() {
     try {
       const { token } = await api.login(email, password);
       setToken(token);
-      navigate(redirect);
+      // Use window.location for the redirect because the target path may contain
+      // encoded query params that react-router's navigate() would mangle.
+      window.location.href = redirect;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed. Check your credentials and try again.');
     } finally {
