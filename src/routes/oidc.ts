@@ -11,7 +11,7 @@ import { successResponse } from "@/util/response-helpers";
 
 const AuthorizeSchema = z.object({
   client_id: z.string().min(1),
-  redirect_uri: z.string().url(),
+  redirect_uri: z.string().url().optional(),
   state: z.string().min(1),
 });
 
@@ -42,11 +42,11 @@ export const oidcRoutes = new Elysia({ prefix: "/api/auth" })
       const { client_id, redirect_uri } = parsed.data;
 
       try {
-        const { app } = await oidcService.validateAuthorizeRequest(client_id, redirect_uri);
+        const { app, resolvedRedirectUri } = await oidcService.validateAuthorizeRequest(client_id, redirect_uri);
         return successResponse({
           clientId: app.slug,
           appName: app.name,
-          redirectUri: redirect_uri,
+          redirectUri: resolvedRedirectUri,
         });
       } catch (err) {
         set.status = (err as any).statusCode ?? 400;
@@ -74,9 +74,17 @@ export const oidcRoutes = new Elysia({ prefix: "/api/auth" })
       try {
         // Resolve app by slug or ID
         const app = await authService.getApp(client_id);
-        const { code } = await oidcService.issueAuthorizationCode(user.id, app.id, redirect_uri);
 
-        const callbackUrl = new URL(redirect_uri);
+        // Resolve redirect_uri: use provided or default to first registered
+        const resolvedRedirectUri = redirect_uri ?? (() => {
+          const allowed = app.allowedRedirectUris ? (JSON.parse(app.allowedRedirectUris) as string[]) : [];
+          if (allowed.length === 0) throw new ValidationError(`No redirect_uri provided and no allowed redirect URIs registered for '${app.name}'.`);
+          return allowed[0];
+        })();
+
+        const { code } = await oidcService.issueAuthorizationCode(user.id, app.id, resolvedRedirectUri);
+
+        const callbackUrl = new URL(resolvedRedirectUri);
         callbackUrl.searchParams.set("code", code);
         callbackUrl.searchParams.set("state", state);
 

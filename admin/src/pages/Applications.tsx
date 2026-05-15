@@ -586,9 +586,38 @@ function RedirectUriEditor({ appId, uris, onSaved }: { appId: string; uris: stri
       ) : (
         <ul className="mb-3 space-y-1">
           {items.map((uri, i) => (
-            <li key={i} className="flex items-center justify-between rounded-md bg-slate-900 px-3 py-1.5">
-              <span className="truncate text-xs text-slate-300">{uri}</span>
-              <button type="button" onClick={() => handleRemove(i)} className="ml-2 shrink-0 text-xs text-red-400 hover:text-red-300">Remove</button>
+            <li key={i} className="flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1.5">
+              <div className="flex shrink-0 flex-col gap-0.5">
+                <button
+                  type="button"
+                  disabled={i === 0}
+                  onClick={() => {
+                    const next = [...items];
+                    [next[i - 1], next[i]] = [next[i], next[i - 1]];
+                    setItems(next);
+                  }}
+                  className="text-xs leading-none text-slate-500 hover:text-slate-200 disabled:opacity-20"
+                  aria-label={`Move ${uri} up`}
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  disabled={i === items.length - 1}
+                  onClick={() => {
+                    const next = [...items];
+                    [next[i], next[i + 1]] = [next[i + 1], next[i]];
+                    setItems(next);
+                  }}
+                  className="text-xs leading-none text-slate-500 hover:text-slate-200 disabled:opacity-20"
+                  aria-label={`Move ${uri} down`}
+                >
+                  ▼
+                </button>
+              </div>
+              <span className="flex-1 truncate text-xs text-slate-300">{uri}</span>
+              {i === 0 && <span className="shrink-0 rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-300">DEFAULT</span>}
+              <button type="button" onClick={() => handleRemove(i)} className="shrink-0 text-xs text-red-400 hover:text-red-300">Remove</button>
             </li>
           ))}
         </ul>

@@ -25,16 +25,16 @@ class OidcService {
    */
   async validateAuthorizeRequest(
     clientId: string,
-    redirectUri: string,
-  ): Promise<{ app: typeof applications.$inferSelect }> {
+    redirectUri?: string,
+  ): Promise<{ app: typeof applications.$inferSelect; resolvedRedirectUri: string }> {
     // Resolve app by slug or ID
     const app = await this.getApp(clientId);
     if (!app) throw new NotFoundError("Application", clientId);
 
-    // Validate redirect URI
-    this.validateRedirectUri(app, redirectUri);
+    // Resolve redirect URI: use provided or default to first registered
+    const resolved = this.resolveRedirectUri(app, redirectUri);
 
-    return { app };
+    return { app, resolvedRedirectUri: resolved };
   }
 
   /**
@@ -55,7 +55,7 @@ class OidcService {
     if (!app) throw new NotFoundError("Application", appId);
 
     // Validate redirect URI against app configuration
-    this.validateRedirectUri(app, redirectUri);
+    this.validateRedirectUri(app, redirectUri, true /* required here */);
 
     // Verify user has a membership for this app
     const membership = await db.select()
@@ -184,7 +184,26 @@ class OidcService {
     return { accessToken, tokenType: "Bearer", expiresIn };
   }
 
-  private validateRedirectUri(app: typeof applications.$inferSelect, redirectUri: string): void {
+  private resolveRedirectUri(app: typeof applications.$inferSelect, redirectUri?: string): string {
+    const allowedUris = app.allowedRedirectUris ? (JSON.parse(app.allowedRedirectUris) as string[]) : [];
+
+    // If redirect_uri provided, validate and use it
+    if (redirectUri) {
+      this.validateRedirectUri(app, redirectUri);
+      return redirectUri;
+    }
+
+    // No redirect_uri provided — use first registered URI
+    if (allowedUris.length === 0) {
+      throw new ValidationError(
+        `No redirect_uri provided and no allowed redirect URIs registered for '${app.name}'. Either pass redirect_uri or register at least one in the application settings.`,
+      );
+    }
+
+    return allowedUris[0];
+  }
+
+  private validateRedirectUri(app: typeof applications.$inferSelect, redirectUri: string, required = false): void {
     const allowedUris = app.allowedRedirectUris ? (JSON.parse(app.allowedRedirectUris) as string[]) : [];
 
     if (allowedUris.length > 0) {

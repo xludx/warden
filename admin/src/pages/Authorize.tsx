@@ -21,13 +21,16 @@ export default function Authorize() {
   const state = searchParams.get('state') ?? '';
 
   useEffect(() => {
-    if (!clientId || !redirectUri || !state) {
-      setError('Missing required parameters: client_id, redirect_uri, and state');
+    if (!clientId || !state) {
+      setError('Missing required parameters: client_id and state');
       setLoading(false);
       return;
     }
 
-    fetch(`/api/auth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}`)
+    const params = new URLSearchParams({ client_id: clientId, state });
+    if (redirectUri) params.set('redirect_uri', redirectUri);
+
+    fetch(`/api/auth/authorize?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -49,13 +52,15 @@ export default function Authorize() {
         setSubmitting(true);
         setError('');
         try {
+          const body: Record<string, string> = { client_id: clientId, state };
+          if (redirectUri) body.redirect_uri = redirectUri;
           const res = await fetch('/api/auth/authorize/confirm', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ client_id: clientId, redirect_uri: redirectUri, state }),
+            body: JSON.stringify(body),
           });
           const data = await res.json();
           if (data.success) {
@@ -84,13 +89,15 @@ export default function Authorize() {
     setSubmitting(true);
     setError('');
     try {
+      const body: Record<string, string> = { client_id: clientId, state };
+      if (redirectUri) body.redirect_uri = redirectUri;
       const res = await fetch('/api/auth/authorize/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ client_id: clientId, redirect_uri: redirectUri, state }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.success) {
