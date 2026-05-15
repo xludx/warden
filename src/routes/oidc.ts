@@ -62,6 +62,7 @@ export const oidcRoutes = new Elysia({ prefix: "/api/auth" })
   .post(
     "/authorize/confirm",
     async ({ body, headers, set }) => {
+      logger.info({ body }, "Authorize confirm request");
       const { user } = await requireAuth(headers);
       const parsed = AuthorizeSchema.safeParse(body);
       if (!parsed.success) {

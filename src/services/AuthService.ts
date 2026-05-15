@@ -111,6 +111,7 @@ export class AuthService {
   // ── Login ─────────────────────────────────────────
 
   async login(email: string, password: string, appId: string): Promise<{ user: SafeUser; token: string }> {
+    logger.info({ email, appId }, "Login attempt");
     const app = await this.getApp(appId);
     if (!app) throw new NotFoundError("Application", appId);
 
@@ -135,7 +136,10 @@ export class AuthService {
     }
 
     const membership = await this.getMembership(user.id, app.id);
-    if (!membership) throw new ValidationError("Invalid email or password");
+    if (!membership) {
+      logger.warn({ userId: user.id, email, appId: appId, appSlug: app.slug }, "Login rejected: no membership");
+      throw new ValidationError("Invalid email or password");
+    }
     const role = membership.role;
 
     const token = await signJwt(
