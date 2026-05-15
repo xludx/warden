@@ -3,6 +3,7 @@ import { z } from "zod";
 import { errorHandlerMiddleware } from "@/middleware/error-handler";
 import { requestIdMiddleware } from "@/middleware/request-id";
 import { authMiddleware, requireAuth } from "@/middleware/auth";
+import { logger } from "@/util/logger";
 import { oidcService } from "@/services/OidcService";
 import { authService } from "@/services/AuthService";
 import { successResponse } from "@/util/response-helpers";
