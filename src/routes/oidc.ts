@@ -121,7 +121,11 @@ export const oidcRoutes = new Elysia({ prefix: "/api/auth" })
             parsed.data.client_secret,
             parsed.data.redirect_uri,
           );
-          return successResponse(result);
+          return successResponse({
+            access_token: result.accessToken,
+            token_type: result.tokenType,
+            expires_in: result.expiresIn,
+          });
         } catch (err) {
           set.status = (err as any).statusCode ?? 400;
           return { success: false, error: (err as Error).message };
