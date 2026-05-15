@@ -20,7 +20,7 @@ const AuthorizationCodeGrantSchema = z.object({
   client_secret: z.string().min(1),
   code: z.string().min(1),
   grant_type: z.literal("authorization_code"),
-  redirect_uri: z.string().url(),
+  redirect_uri: z.string().url().optional(),
 });
 
 // ── Routes ─────────────────────────────────────────────

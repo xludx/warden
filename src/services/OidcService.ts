@@ -102,7 +102,7 @@ class OidcService {
     code: string,
     clientId: string,
     clientSecret: string,
-    redirectUri: string,
+    redirectUri?: string,
   ): Promise<{ accessToken: string; tokenType: string; expiresIn: number }> {
     // Look up the app by slug or ID
     const app = await this.getApp(clientId);
@@ -130,8 +130,8 @@ class OidcService {
       throw new ValidationError("Authorization code was not issued for this application");
     }
 
-    // Verify redirect URI matches
-    if (authCode.redirectUri !== redirectUri) {
+    // Verify redirect URI matches (if provided by client)
+    if (redirectUri && authCode.redirectUri !== redirectUri) {
       throw new ValidationError("Redirect URI does not match");
     }
 
