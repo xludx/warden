@@ -13,12 +13,22 @@ export default function Login() {
 
   const redirect = searchParams.get('redirect') || '/admin';
 
+  // Extract client_id from redirect for the authorize flow, default to warden
+  const targetAppId = (() => {
+    try {
+      const redirectUrl = new URL(redirect, window.location.origin);
+      return redirectUrl.searchParams.get('client_id') || 'warden';
+    } catch {
+      return 'warden';
+    }
+  })();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const { token } = await api.login(email, password);
+      const { token } = await api.login(email, password, targetAppId);
       setToken(token);
       // Use window.location for the redirect because the target path may contain
       // encoded query params that react-router's navigate() would mangle.

@@ -83,11 +83,11 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 export const api = {
   // Auth
-  login: (email: string, password: string) =>
+  login: (email: string, password: string, appId: string = 'warden') =>
     request<{ token: string; user: User }>(`/api/auth/login`, {
       action: 'Sign in',
       method: 'POST',
-      body: JSON.stringify({ email, password, appId: 'warden' }),
+      body: JSON.stringify({ email, password, appId }),
     }),
 
   me: () => request<User>(`/api/auth/me`, { action: 'Load your session' }),
