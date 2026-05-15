@@ -7,6 +7,7 @@ import { logger } from "@/util/logger";
 import { oidcService } from "@/services/OidcService";
 import { authService } from "@/services/AuthService";
 import { successResponse } from "@/util/response-helpers";
+import { ValidationError } from "@/errors/service-errors";
 
 // ── Schemas ────────────────────────────────────────────
 
