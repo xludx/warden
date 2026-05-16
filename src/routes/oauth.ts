@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { errorHandlerMiddleware } from "@/middleware/error-handler";
 import { requestIdMiddleware } from "@/middleware/request-id";
+import { logger } from "@/util/logger";
 import { oauthService } from "@/services/OAuthService";
 
 const providers = ["google", "github"] as const;
